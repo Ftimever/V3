@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "pluginId": "example.counter",
+  "displayName": "Example counter",
+  "runtime": { "kind": "in-process", "entry": "./index.mjs" },
+  "provides": { "services": [{ "id": "example.counter", "version": "1.0.0" }] }
+}

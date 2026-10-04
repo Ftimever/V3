@@ -1,0 +1,25 @@
+# 故障排查
+
+## 找不到 workspace 导出
+
+先运行 `pnpm install --frozen-lockfile` 和 `pnpm build`。包导出指向 `dist`，不是源码路径；不要通过私有 `src/` 路径绕过包边界。
+
+## 生成类型过期
+
+修改 `schemas/` 后运行 `pnpm generate`，再运行 `pnpm check:generated`。提交 Schema 与生成结果，不直接编辑 `*.v1.ts` 或生成的 `schemas.ts`。
+
+## 服务访问被拒绝
+
+检查 consumer 的 required/optional 服务依赖、manifest 权限、组 policy 和绑定到当前 `instanceId` 的 grant。`SERVICE_NOT_READY` 是注册成功但当前不可用，不代表缺少安装包。
+
+## Middleware 成环
+
+检查 before/after 和插件依赖是否产生反向约束。错误报告包含涉及的 middleware ID；不能通过改变插件加载顺序修复环。
+
+## 插件启动失败
+
+core 会清理该实例已注册的资源；原始异常向宿主传播。如果清理也失败，会收到包含启动和清理异常的 AggregateError。loader 的批量启动汇总失败，但允许独立实例启动；通过 `status()` 检查状态和错误，通过 `takeDiagnostics()` 检查后台传播或观察者异常。当前没有自动重启调度，启用 manifest restart policy 后可显式调用 `retry()`。
+
+## 找不到 npm 插件
+
+先将插件安装到宿主项目的依赖目录。npm 来源填写 `packageName` 和可选的 SemVer `version` 范围，不填写 URL、`file:` 或带 `@latest` 的安装选择器。loader 只解析已安装包；npm 下载、完整性校验和安装事务仍在实现计划中。

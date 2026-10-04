@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:easybot:schema:rpc-envelope:v1",
+  "title": "RPC Envelope",
+  "type": "object",
+  "required": ["protocol", "version", "type"],
+  "additionalProperties": false,
+  "properties": {
+    "protocol": { "const": "easybot.rpc" },
+    "version": { "const": 1 },
+    "type": { "enum": ["request", "response", "notification", "stream", "cancel", "hello", "hello-ack"] },
+    "pluginInstanceId": { "type": "string", "minLength": 1 },
+    "traceId": { "type": "string", "minLength": 1 },
+    "deadline": { "type": "number", "minimum": 0 },
+    "capability": { "type": "string", "minLength": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "method": { "type": "string", "minLength": 1 },
+    "payload": { "$ref": "#/$defs/json" },
+    "ok": { "type": "boolean" },
+    "error": { "$ref": "#/$defs/error" },
+    "reason": { "type": "string" },
+    "stream": { "enum": ["open", "chunk", "close"] },
+    "capabilities": { "$ref": "#/$defs/capabilities" }
+  },
+  "oneOf": [
+    {
+      "properties": { "type": { "const": "request" } },
+      "required": ["id", "method"],
+      "not": { "anyOf": [{ "required": ["ok"] }, { "required": ["error"] }, { "required": ["stream"] }, { "required": ["capabilities"] }] }
+    },
+    {
+      "properties": { "type": { "const": "response" }, "ok": { "const": true } },
+      "required": ["id", "ok"],
+      "not": { "anyOf": [{ "required": ["method"] }, { "required": ["error"] }, { "required": ["stream"] }, { "required": ["capabilities"] }] }
+    },
+    {
+      "properties": { "type": { "const": "response" }, "ok": { "const": false } },
+      "required": ["id", "ok", "error"],
+      "not": { "anyOf": [{ "required": ["payload"] }, { "required": ["method"] }, { "required": ["stream"] }, { "required": ["capabilities"] }] }
+    },
+    {
+      "properties": { "type": { "const": "notification" } },
+      "required": ["method"],
+      "not": { "anyOf": [{ "required": ["id"] }, { "required": ["ok"] }, { "required": ["error"] }, { "required": ["stream"] }, { "required": ["capabilities"] }] }
+    },
+    {
+      "properties": { "type": { "const": "stream" } },
+      "required": ["id", "stream"],
+      "not": { "anyOf": [{ "required": ["method"] }, { "required": ["ok"] }, { "required": ["capabilities"] }] }
+    },
+    {
+      "properties": { "type": { "const": "cancel" } },
+      "required": ["id"],
+      "not": { "anyOf": [{ "required": ["payload"] }, { "required": ["method"] }, { "required": ["ok"] }, { "required": ["error"] }, { "required": ["stream"] }, { "required": ["capabilities"] }] }
+    },
+    {
+      "properties": { "type": { "enum": ["hello", "hello-ack"] } },
+      "required": ["capabilities"],
+      "not": { "anyOf": [{ "required": ["id"] }, { "required": ["method"] }, { "required": ["ok"] }, { "required": ["error"] }, { "required": ["stream"] }, { "required": ["payload"] }] }
+    }
+  ],
+  "$defs": {
+    "json": {
+      "anyOf": [
+        { "type": ["string", "number", "boolean", "null"] },
+        { "type": "array", "items": { "$ref": "#/$defs/json" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/json" } }
+      ]
+    },
+    "reference": {
+      "type": "object",
+      "required": ["id", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "services": { "type": "array", "items": { "$ref": "#/$defs/reference" } },
+        "events": { "type": "array", "items": { "$ref": "#/$defs/reference" } },
+        "capabilities": { "type": "array", "items": { "type": "string" } },
+        "features": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": ["MANIFEST_MISMATCH", "INSTANCE_CONFLICT", "SCOPE_DISPOSED", "RUNTIME_DISPOSED", "SERVICE_NOT_DECLARED", "EVENT_NOT_DECLARED", "MIDDLEWARE_CONFLICT", "MIDDLEWARE_CYCLE", "RETRY_NOT_ALLOWED", "CAPABILITY_NOT_DECLARED", "CAPABILITY_NOT_GRANTED", "SERVICE_NOT_READY", "SERVICE_NOT_FOUND", "METHOD_NOT_FOUND", "PERMISSION_DENIED", "REQUEST_TIMEOUT", "PLUGIN_UNAVAILABLE", "INVALID_REQUEST", "INVALID_PAYLOAD", "REQUEST_CANCELLED", "PROTOCOL_MISMATCH", "INVALID_MANIFEST", "INVALID_CONFIG", "DEPENDENCY_NOT_FOUND", "DEPENDENCY_CYCLE", "VERSION_MISMATCH", "SERVICE_CONFLICT", "INVALID_LIFECYCLE_STATE", "PLUGIN_START_FAILED", "PLUGIN_STOP_FAILED", "DISPOSE_FAILED", "INTERNAL_ERROR"]
+        },
+        "message": { "type": "string" },
+        "data": { "$ref": "#/$defs/json" }
+      }
+    }
+  }
+}

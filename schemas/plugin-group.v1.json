@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:easybot:schema:plugin-group:v1",
+  "title": "Plugin Group Manifest",
+  "type": "object",
+  "required": ["schemaVersion", "groupId", "displayName", "version", "members"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "groupId": { "type": "string", "minLength": 1 },
+    "displayName": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pluginId", "packageName", "version", "instanceId"],
+        "additionalProperties": false,
+        "properties": {
+          "pluginId": { "type": "string", "minLength": 1 },
+          "packageName": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 },
+          "instanceId": { "type": "string", "minLength": 1 },
+          "runtime": {
+            "type": "object",
+            "required": ["kind", "entry", "trust"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": { "enum": ["in-process", "child-process"] },
+              "entry": { "type": "string", "pattern": "^\\./" },
+              "protocolVersion": { "type": "integer", "minimum": 1 },
+              "trust": { "enum": ["trusted", "isolated", "privileged"] }
+            }
+          }
+        }
+      }
+    },
+    "serviceBindings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["implementation"],
+        "additionalProperties": false,
+        "properties": {
+          "implementation": { "type": "string", "minLength": 1 },
+          "allowOverride": { "type": "boolean" }
+        }
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["instanceId", "id"],
+        "additionalProperties": false,
+        "properties": {
+          "instanceId": { "type": "string", "minLength": 1 },
+          "id": { "type": "string", "pattern": "^(process|network|filesystem|storage|service|event|webui|secret):.+$" },
+          "scope": { "$ref": "#/$defs/jsonObject" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "json": {
+      "anyOf": [
+        { "type": ["string", "number", "boolean", "null"] },
+        { "type": "array", "items": { "$ref": "#/$defs/json" } },
+        { "$ref": "#/$defs/jsonObject" }
+      ]
+    },
+    "jsonObject": { "type": "object", "additionalProperties": { "$ref": "#/$defs/json" } }
+  }
+}

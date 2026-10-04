@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "pluginId": "example.consumer",
+  "displayName": "Example consumer",
+  "runtime": { "kind": "in-process", "entry": "./index.mjs" },
+  "requires": { "services": { "required": [{ "id": "example.counter", "version": "^1.0.0" }] } },
+  "permissions": [{ "id": "service:example.counter", "reason": "Increment the example counter" }],
+  "config": { "schema": "./config.schema.json" }
+}

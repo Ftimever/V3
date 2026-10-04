@@ -1,0 +1,28 @@
+{
+  "name": "easybot-platform",
+  "version": "0.1.0",
+  "description": "A general-purpose Cordis-based plugin platform.",
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck && tsc -p test/tsconfig.json",
+    "test": "pnpm build && node --test test/*.test.mjs",
+    "generate": "node scripts/generate-contracts.mjs",
+    "check:generated": "node scripts/generate-contracts.mjs --check",
+    "ci": "pnpm check:generated && pnpm build && pnpm typecheck && node --test test/*.test.mjs",
+    "changeset": "changeset",
+    "example": "pnpm build && node examples/in-process.mjs",
+    "example:loader": "pnpm build && node examples/loader.mjs"
+  },
+  "devDependencies": {
+    "@changesets/cli": "2.29.8",
+    "ajv": "8.17.1",
+    "json-schema-to-typescript": "16.0.0",
+    "typescript": "6.0.3"
+  },
+  "private": true
+}

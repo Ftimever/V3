@@ -1,0 +1,5 @@
+export { LoaderError } from './errors.js'
+export { createPluginLoader, PluginLoader } from './loader.js'
+export { discoverPlugin } from './discovery.js'
+export { resolveDependencies } from './planner.js'
+export type { DependencyPlan, DiscoverOptions, DiscoveredPlugin, HostCapability, InstanceDependencies, LoaderOptions, PluginSource, PluginStatus } from './types.js'
