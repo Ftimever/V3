@@ -18,7 +18,7 @@
 
 ## 插件启动失败
 
-core 会清理该实例已注册的资源；原始异常向宿主传播。如果清理也失败，会收到包含启动和清理异常的 AggregateError。loader 的批量启动汇总失败，但允许独立实例启动；通过 `status()` 检查状态和错误，通过 `takeDiagnostics()` 检查后台传播或观察者异常。当前没有自动重启调度，启用 manifest restart policy 后可显式调用 `retry()`。
+core 会清理该实例已注册的资源；原始异常向宿主传播。如果清理也失败，会收到包含启动和清理异常的 AggregateError。loader 的批量启动汇总失败，但允许独立实例启动；通过 `status()` 检查状态和错误，通过 `takeDiagnostics()` 检查后台传播或观察者异常。启用 manifest restart policy 后，运行时故障会触发有界自动重试，也可显式调用 `retry()`。
 
 ## 找不到 npm 插件
 

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { request as httpRequest } from 'node:http'
 import { test } from 'node:test'
 import { createManagementServer, managementRequest } from '../packages/management/dist/index.js'
 import { runCli } from '../packages/cli/dist/index.js'
@@ -9,14 +10,21 @@ test('management API is authenticated, loopback-bound, bounded and shared with C
   const loader = { list: () => statuses }
   const server = await createManagementServer({ token, loader, port: 0 })
   context.after(() => server.close())
-  await assert.rejects(fetch(`${server.address}/api/v1/status`), /401|Unauthorized/)
+  const unauthenticated = await fetch(`${server.address}/api/v1/status`)
+  assert.equal(unauthenticated.status, 401)
   const response = await managementRequest({ baseUrl: server.address, token }, '/api/v1/status')
   assert.deepEqual(response.plugins, statuses)
   const output = []
   await runCli(['status'], { EASYBOT_MANAGEMENT_URL: server.address, EASYBOT_MANAGEMENT_TOKEN: token }, { write: value => output.push(value) })
   assert.match(output.join(''), /running/)
-  const tooLarge = await fetch(`${server.address}/api/v1/status`, { headers: { authorization: `Bearer ${token}`, host: 'evil.test' } })
-  assert.equal(tooLarge.status, 400)
+  const tooLarge = await new Promise(resolve => {
+    const request = httpRequest(new URL('/api/v1/status', server.address), { headers: { authorization: `Bearer ${token}`, host: 'evil.test' } }, response => {
+      response.resume()
+      response.once('end', () => resolve(response))
+    })
+    request.end()
+  })
+  assert.equal(tooLarge.statusCode, 400)
   const origin = await fetch(`${server.address}/api/v1/status`, { headers: { authorization: `Bearer ${token}`, origin: 'https://evil.test' } })
   assert.equal(origin.status, 200)
 })
@@ -29,6 +37,6 @@ test('management actions use same group manager and reject request bodies over l
   const response = await fetch(`${server.address}/api/v1/groups/group%2Fone/start`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: '{}' })
   assert.equal(response.status, 200)
   assert.deepEqual(calls, [['start', 'group/one']])
-  const tooLarge = await fetch(`${server.address}/api/v1/groups/x/start`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-length': '100' }, body: '123456789' })
+  const tooLarge = await fetch(`${server.address}/api/v1/groups/x/start`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ value: '123456789' }) })
   assert.equal(tooLarge.status, 413)
 })

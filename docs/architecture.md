@@ -1,6 +1,6 @@
 # 架构与边界
 
-本文解释第一版设计，不将未实现模块描述为已有功能。实际实现状态以 [实现计划](implementation-plan.md) 为准。
+本文解释第一版设计与边界。实际实现状态以 [实现计划](implementation-plan.md) 为准。
 
 ## 平台职责
 
@@ -26,7 +26,7 @@ base / WebUI / CLI -> public management contracts
 
 当前 kernel 实际创建 Cordis `Context`，每个挂载实例拥有 Cordis plugin fiber。服务通过 Cordis `provide` 注册，通知通过 Cordis 的监听及分发机制执行；平台作用域在 fiber 清理时释放资源。
 
-默认插件上下文不暴露 Cordis 原始对象。未来 `@easybot/cordis` 提供显式、experimental 兼容层；它不等于给所有插件开放宿主内部 registry。当前没有发布这个兼容包。
+默认插件上下文不暴露 Cordis 原始对象。`@easybot/cordis-compat` 仅提供显式、experimental、受限的 Cordis 风格 API；它不等于给所有插件开放宿主内部 registry，也不暴露原始 Cordis Context。
 
 ## 公开层级
 

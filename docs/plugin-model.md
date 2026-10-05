@@ -34,7 +34,7 @@
 
 `services.provide()` 返回就绪状态控制与释放句柄。服务可以注册为 `unavailable`；`get()` 此时返回 `undefined`，`require()` 抛出 `SERVICE_NOT_READY`。重复提供者默认抛出 `SERVICE_CONFLICT`。
 
-第一阶段没有实现候选实现选择或服务替换；宿主绑定逻辑属于后续 loader/部署层。进程内服务对象必须是公开领域契约，不允许把内部客户端或私有 registry 当作契约。
+组部署支持显式 service binding 和受控 provider replacement；不存在隐式全局 monkey patch 或 fallback。进程内服务对象必须是公开领域契约，不允许把内部客户端或私有 registry 当作契约。
 
 ## 事件
 

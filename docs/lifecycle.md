@@ -20,7 +20,7 @@ stopped -> resolved           再次启用
 
 `stop()` 和 `reportFailure()` 按逆依赖顺序清理受影响实例。`reportFailure()` 将目标记为 failed，而手动停机记为 stopped。恢复服务后，可选消费者自动由 degraded 回到 running；已经停止的必需消费者必须显式 `start()`，不会偷偷重新执行副作用。
 
-`retry()` 仅接受启用 restart policy 的 failed 实例，遵循 maxAttempts 与 fixed/linear/exponential 延迟。默认最多重试 3 次，初始延迟 1000 ms，延迟上限 30000 ms；这些默认值不是自动重启承诺。重试额度在 loader 生命周期内累计，超限记为 quarantined。显式 stop 后可以重新启用，但不会重置累计次数。自动重启调度、进程退出检测和强制超时终止尚未实现。
+`retry()` 仅接受启用 restart policy 的 failed 实例，遵循 maxAttempts 与 fixed/linear/exponential 延迟。默认最多重试 3 次，初始延迟 1000 ms，延迟上限 30000 ms；loader 会在运行时故障后按该策略自动调度有限重试。重试额度在 loader 生命周期内累计，超限记为 quarantined。显式 stop 后可以重新启用，但不会重置累计次数；启动、关闭和 RPC 请求均有边界超时。
 
 ## Kernel 作用域
 
@@ -32,4 +32,4 @@ stopped -> resolved           再次启用
 
 ## 后续配置更新
 
-第一版计划支持显式应用配置，并根据 `x-reload` 选择 hot、reconnect、restart 或 manual。代码热替换不在第一版实现范围；它需要排空、状态迁移、去重和恢复策略，不能只清除 import 缓存。
+第一版支持显式应用配置，并根据 `x-reload` 选择 hot、reconnect、restart 或 manual。代码热替换不在第一版实现范围；它需要排空、状态迁移、去重和恢复策略，不能只清除 import 缓存。

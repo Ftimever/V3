@@ -16,11 +16,12 @@
     "ci": "pnpm check:generated && pnpm build && pnpm typecheck && node --test test/*.test.mjs",
     "changeset": "changeset",
     "example": "pnpm build && node examples/in-process.mjs",
-    "example:loader": "pnpm build && node examples/loader.mjs"
+    "example:loader": "pnpm build && node examples/loader.mjs",
+    "release:check": "pnpm build && pnpm run check:generated && pnpm run typecheck && node scripts/release-check.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "2.29.8",
-    "ajv": "8.17.1",
+    "ajv": "8.18.0",
     "json-schema-to-typescript": "16.0.0",
     "typescript": "6.0.3"
   },

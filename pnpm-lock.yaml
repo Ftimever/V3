@@ -69,11 +69,34 @@ importers:
         specifier: 22.20.5
         version: 22.20.5
 
+  packages/contract-tests:
+    dependencies:
+      '@easybot/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      ajv:
+        specifier: 8.17.1
+        version: 8.17.1
+    devDependencies:
+      '@types/node':
+        specifier: 22.20.5
+        version: 22.20.5
+
   packages/contracts:
     devDependencies:
       typescript:
         specifier: 6.0.3
         version: 6.0.3
+
+  packages/cordis-compat:
+    dependencies:
+      '@easybot/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@types/node':
+        specifier: 22.20.5
+        version: 22.20.5
 
   packages/core:
     dependencies:

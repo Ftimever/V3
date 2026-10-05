@@ -43,7 +43,7 @@ npm 来源写作 `{ kind: 'npm', packageName: '@example/utility', version: '^1.0
 
 `start(instanceId)` 启动该实例的依赖闭包，`startAll()` 启动整个图。必需提供者启动失败时消费者不会执行入口；批量启动仍尝试独立实例，并汇总错误。可选失败不阻止默认策略的消费者激活，但会产生 degraded 状态和诊断信息。
 
-消费者通过平台 API 访问服务时仍需完整的 manifest 权限、宿主 policy 和当前实例 grant。依赖声明不等于权限，trust 也不自动授予权限。初始 config 是冻结的 JSON 对象；manifest 的 config.schema 指向包内 draft 2020-12 Schema。当前不填充默认值、不进行类型转换，也不加载远程 Schema。配置持久化和 reconfigure 调用尚未实现。
+消费者通过平台 API 访问服务时仍需完整的 manifest 权限、宿主 policy 和当前实例 grant。依赖声明不等于权限，trust 也不自动授予权限。初始 config 是冻结的 JSON 对象；manifest 的 config.schema 指向包内 draft 2020-12 Schema。平台不填充默认值、不进行类型转换，也不加载远程 Schema；`@easybot/config` 和 loader 的 reconfigure 路径负责持久化更新与失败回滚。
 
 ## 观察与停机
 

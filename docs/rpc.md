@@ -1,6 +1,8 @@
 # RPC 协议
 
-`schemas/rpc-envelope.v1.json` 描述第一版计划采用的 JSON envelope。当前仅有 Schema 和 TypeScript 契约，**没有 RPC peer 或子进程传输实现**。
+`schemas/rpc-envelope.v1.json` 描述第一版采用的 JSON envelope。`@easybot/rpc` 已提供有界 framing、固定连接身份、调用、流、取消、截止时间、错误和背压；`@easybot/runtime-process` 使用 stdio 将子进程插件接入宿主。
+
+RPC 只提供故障隔离与协议边界，不是操作系统级沙箱。插件仍可能通过其运行环境访问文件、网络、环境变量或原生模块；不可信插件必须由外部部署层提供 OS 级限制。
 
 ## 结构
 

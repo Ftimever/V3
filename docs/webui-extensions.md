@@ -1,6 +1,6 @@
 # WebUI 扩展
 
-第一阶段只实现声明结构，不包含网页界面或 HTTP 管理端。第一版目标是统一管理服务供 WebUI 与 CLI 调用，不让界面直接操作 loader 私有对象。
+第一版提供固定 CSP 的宿主页面、统一管理 API 和声明式贡献 registry。WebUI 与 CLI 不直接操作 loader 私有对象；管理端默认只监听 loopback，并要求 Bearer token。
 
 ## 声明式贡献
 
