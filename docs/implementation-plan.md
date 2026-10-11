@@ -18,6 +18,7 @@
 - 管理 API 的状态、配置、组部署/启停/回滚和 WebUI 只读接口；固定 loopback、Bearer token、Host、Origin 与请求体边界。
 - `@easybot/contract-tests` 外部插件合规检查包与实验性的受限 `@easybot/cordis-compat` 适配层。
 - `release:check` 发布验收：所有 workspace 包构建、类型、生成物和 `pack --dry-run`。
+- `@easybot/host` 自持宿主：配置、SQLite/密钥/token 持久化、插件组恢复、loopback 管理 API 和幂等信号关闭。
 
 ## 实现顺序
 
@@ -29,7 +30,7 @@
 | rpc / runtime-process | 已完成 | 当前提供故障隔离，不宣称恶意代码沙箱 |
 | plugin-group | 已完成 | 外部不可逆副作用仍需领域项目自行补偿 |
 | base plugins | 已完成 | WebUI 保持声明式，不允许任意插件脚本注入 |
-| management / WebUI / CLI | 已完成基础闭环 | 后续可增加更细粒度管理授权与完整前端应用 |
+| management / WebUI / CLI / host | 已完成基础闭环 | 后续可增加更细粒度管理授权与完整前端应用 |
 | plugin-contract-tests | 已完成基础包 | 外部项目可直接引入并扩展领域特定断言 |
 | release | 已完成验收脚本 | 发布前仍需 Changesets 版本决策和人工迁移审查 |
 

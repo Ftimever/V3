@@ -14,6 +14,12 @@ failed -> quarantined        超过策略限制
 stopped -> resolved           再次启用
 ```
 
+## 宿主生命周期
+
+自持宿主先创建持久化基础设施，再恢复插件组，最后开放管理 API。关闭时执行相反顺序：先关闭 API，再停止插件组，最后关闭 SQLite。`SIGINT` 和 `SIGTERM` 共用幂等关闭流程；Windows 主要使用 `SIGINT`。
+
+恢复只处理 SQLite 中 `enabled: true` 且存在 active deployment 的组。组恢复失败会保存错误并停用该组，但不会阻止其他组恢复。处于 `applying` 的记录不会被当作新版本提交，宿主恢复最后一个稳定 deployment。
+
 服务注册、插件初始化完成、外部连接就绪是不同事实，不能混成一个状态。loader 保存可查询状态；可选能力缺失时显示 degraded，必需依赖失败时停止消费者。
 
 **当前状态**：core 实现挂载与资源清理；loader 实现进程内状态机、显式有界重试与失败依赖传播。初始化成功经过 ready，未就绪的声明服务和缺失的可选依赖使实例进入 degraded。required 服务不可用时消费者不能启动；运行期丢失时先停止消费者及其传递依赖。

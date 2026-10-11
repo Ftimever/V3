@@ -1,6 +1,6 @@
 import Ajv2020 from 'ajv/dist/2020.js'
 import { satisfies, valid, validRange } from 'semver'
-import { snapshotJson, type JsonObject, type PermissionGrant, type PluginGroupManifest, type PluginTrustLevel } from '@easybot/contracts'
+import { snapshotJson, type JsonObject, type PermissionGrant, type PermissionRequest, type PluginGroupManifest, type PluginTrustLevel } from '@easybot/contracts'
 import { pluginGroupManifestSchema } from '@easybot/contracts/schemas'
 import { createPluginLoader, LoaderError, type DiscoveredPlugin, type LoaderOptions, type PluginLoader, type PluginSource } from '@easybot/loader'
 import { StateStore } from '@easybot/state'
@@ -24,7 +24,7 @@ export interface GroupManagerOptions {
   readonly store: StateStore
   readonly installer: PackageInstaller
   readonly loader?: Omit<LoaderOptions, 'runtime' | 'serviceBindings'>
-  readonly grants?: (groupId: string, instanceId: string) => readonly PermissionGrant[]
+  readonly grants?: (groupId: string, instanceId: string, policy: readonly PermissionRequest[]) => readonly PermissionGrant[]
   readonly bootstrap?: (loader: PluginLoader, groupId: string) => Promise<void>
   readonly configure?: (loader: PluginLoader, plugin: DiscoveredPlugin, groupVersion: string) => Promise<void>
 }
@@ -99,7 +99,9 @@ export class PluginGroupManager {
         const locked = deployment.members.find(item => item.instanceId === member.instanceId)
         if (!locked || !satisfies(locked.snapshot.version, member.version) || locked.snapshot.packageName !== member.packageName) throw new LoaderError('INVALID_MANIFEST', 'Invalid deployment lock')
         await this.options.installer.verify(locked.snapshot)
-        const discovered = await loader.discover({ instanceId: member.instanceId, groupId: manifest.groupId, source: { kind: 'local', path: locked.snapshot.directory }, trust: locked.trust, config: locked.config, policy: (manifest.permissions ?? []).filter(permission => permission.instanceId === member.instanceId).map(({ instanceId: _instanceId, ...permission }) => permission), grants: this.options.grants?.(manifest.groupId, member.instanceId) ?? [] })
+        const policy = (manifest.permissions ?? []).filter(permission => permission.instanceId === member.instanceId).map(({ instanceId: _instanceId, ...permission }) => permission)
+        const grants = this.options.grants?.(manifest.groupId, member.instanceId, policy) ?? []
+        const discovered = await loader.discover({ instanceId: member.instanceId, groupId: manifest.groupId, source: { kind: 'local', path: locked.snapshot.directory }, trust: locked.trust, config: locked.config, policy, grants })
         if (discovered.identity.pluginId !== member.pluginId || discovered.identity.version !== locked.snapshot.version || discovered.identity.packageName !== locked.snapshot.packageName) throw new LoaderError('MANIFEST_MISMATCH', 'Deployment identity mismatch')
         if (member.runtime && (member.runtime.kind !== discovered.manifest.runtime.kind || member.runtime.entry !== discovered.manifest.runtime.entry || member.runtime.trust !== locked.trust || (member.runtime.protocolVersion ?? 1) !== (discovered.manifest.runtime.protocolVersion ?? 1))) throw new LoaderError('MANIFEST_MISMATCH', 'Group runtime selection differs from plugin declaration')
         for (const service of discovered.manifest.provides?.services ?? []) providerCounts.set(service.id, (providerCounts.get(service.id) ?? 0) + 1)
@@ -178,10 +180,19 @@ export class PluginGroupManager {
   }
 
   async restore(): Promise<void> {
+    const errors: unknown[] = []
     for (const { groupId, record } of this.list()) {
-      if (record.enabled && record.active) await this.start(groupId)
-      else if (record.state === 'applying') this.write(groupId, { state: 'stable', enabled: false, ...(record.active ? { active: record.active } : {}), error: 'Interrupted deployment reverted to last committed deployment' })
+      if (record.enabled && record.active) {
+        try {
+          await this.start(groupId)
+        } catch (error) {
+          const current = this.get(groupId) ?? record
+          this.write(groupId, { ...current, state: 'stable', enabled: false, error: error instanceof Error ? error.message : String(error) })
+          errors.push(error)
+        }
+      } else if (record.state === 'applying') this.write(groupId, { state: 'stable', enabled: false, ...(record.active ? { active: record.active } : {}), error: 'Interrupted deployment reverted to last committed deployment' })
     }
+    if (errors.length) throw new AggregateError(errors, `Some plugin groups failed to restore: ${errors.map(error => error instanceof Error ? error.message : String(error)).join('; ')}`)
   }
 
   dispose(): Promise<void> {

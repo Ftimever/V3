@@ -17,6 +17,8 @@
     "changeset": "changeset",
     "example": "pnpm build && node examples/in-process.mjs",
     "example:loader": "pnpm build && node examples/loader.mjs",
+    "start": "pnpm build && node packages/host/dist/index.js start",
+    "dev": "pnpm start",
     "release:check": "pnpm build && pnpm run check:generated && pnpm run typecheck && node scripts/release-check.mjs"
   },
   "devDependencies": {

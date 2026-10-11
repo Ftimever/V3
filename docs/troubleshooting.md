@@ -23,3 +23,19 @@ core 会清理该实例已注册的资源；原始异常向宿主传播。如果
 ## 找不到 npm 插件
 
 先将插件安装到宿主项目的依赖目录。npm 来源填写 `packageName` 和可选的 SemVer `version` 范围，不填写 URL、`file:` 或带 `@latest` 的安装选择器。loader 只解析已安装包；npm 下载、完整性校验和安装事务仍在实现计划中。
+
+## 宿主无法启动
+
+先运行 `pnpm build`，再检查 `data/` 是否可写。`easybot.sqlite`、`master.key` 和 `management.token` 的父目录会自动创建；如果其中任一文件存在但内容损坏，宿主会拒绝启动，而不是静默重建密钥或 token。
+
+## 管理 API 端口被占用
+
+默认端口是 `27800`。通过 `EASYBOT_MANAGEMENT_PORT=27801 pnpm start` 或配置文件中的 `management.port` 修改端口。管理 API 只允许 `127.0.0.1`、`::1` 和 `localhost`，其他地址会在启动前拒绝。
+
+## 首次启动后找不到 token
+
+首次启动输出的 token 与 `data/management.token` 内容相同。不要把 token 放进插件组 manifest、日志或版本库；CLI 使用时设置 `EASYBOT_MANAGEMENT_TOKEN`，并将 `EASYBOT_MANAGEMENT_URL` 指向宿主地址。
+
+## 插件组没有自动恢复
+
+宿主只恢复 SQLite 中已启用且存在 active deployment 的组。检查管理 API 的 `/api/v1/groups`；如果某组的 `error` 包含完整性校验、依赖或配置错误，先修复部署源或回滚，再通过管理 API 执行 `start`。原始插件目录的修改不会更新已经快照的部署。

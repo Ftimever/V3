@@ -22,6 +22,10 @@ base / WebUI / CLI -> public management contracts
 
 `core` 不依赖 loader、CLI、WebUI、Node 文件系统或具体领域插件。Node.js provider 位于宿主层。workspace 内使用 `workspace:*` 依赖和公开导出，不引用其他包的私有源码路径。
 
+## 宿主层
+
+`@easybot/host` 是运行时装配层，不是新的插件抽象。它创建 SQLite 状态库、密钥库、日志和 WebUI registry，使用 `PluginGroupManager.restore()` 恢复已提交的插件组，然后启动 loopback 管理 API。每个插件组拥有自己的 loader/runtime；宿主通过 bootstrap 为组挂载 base 插件，因此领域插件只依赖公开服务契约。
+
 ## Cordis 集成
 
 当前 kernel 实际创建 Cordis `Context`，每个挂载实例拥有 Cordis plugin fiber。服务通过 Cordis `provide` 注册，通知通过 Cordis 的监听及分发机制执行；平台作用域在 fiber 清理时释放资源。

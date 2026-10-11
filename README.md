@@ -14,6 +14,7 @@ Easybot Platform 是基于 Cordis 的通用插件平台，优先服务插件开�
 - `@easybot/plugin-group`：本地/npm 快照、完整性校验、组部署、升级、恢复和回滚。
 - `@easybot/base`：存储、密钥、HTTP、WebSocket、日志和声明式 WebUI 基础服务。
 - `@easybot/management` / `@easybot/cli`：loopback 管理 API、配置与组控制、WebUI 宿主和 CLI。
+- `@easybot/host`：自持启动入口，负责数据目录、密钥、token、插件组恢复、管理 API 和信号关闭。
 - `@easybot/contract-tests`：外部插件 manifest 与生命周期合规测试工具。
 - `@easybot/cordis-compat`：实验性、受限的 Cordis 风格 API；不暴露原始 Cordis Context。
 
@@ -33,11 +34,14 @@ pnpm test
 pnpm example
 pnpm example:loader
 pnpm run release:check
+pnpm start
 ```
 
 `pnpm example` 运行一个 provider 和一个 consumer，输出计数结果与变更事件。`pnpm run ci` 检查生成类型、构建、类型检查与全部行为测试。`ci` 是 pnpm 保留命令，执行仓库脚本时需要写出 `run`。
 
 `pnpm example:loader` 从独立插件目录加载 counter/consumer，校验配置与权限，输出 `Counter result` 和 `count: 3`，随后按消费者先于提供者的顺序停机。
+
+`pnpm start` 启动自持宿主。默认管理 API 监听 `127.0.0.1:27800`，首次启动在 `data/management.token` 生成 Bearer token，并在控制台显示一次。详细配置、恢复和关闭顺序见[自持启动](docs/host.md)。
 
 修改 `schemas/` 后运行 `pnpm generate`。不要直接修改 `packages/contracts/src/*.v1.ts` 或 `schemas.ts`；`pnpm check:generated` 检测 wire 类型与运行时 Schema 是否过期。
 
